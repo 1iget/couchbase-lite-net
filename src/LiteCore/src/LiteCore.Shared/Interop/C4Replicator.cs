@@ -34,19 +34,23 @@ namespace LiteCore.Interop
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     [return: MarshalAs(UnmanagedType.U1)]
-    internal unsafe delegate bool C4ReplicatorValidationFunction(C4Slice docID,
+    internal unsafe delegate bool C4ReplicatorValidationFunction(FLSlice docID,
             FLDict* body, void* context);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal unsafe delegate void C4ReplicatorDocumentEndedCallback(C4Replicator* replicator,
-            [MarshalAs(UnmanagedType.U1)]bool pushing, C4Slice docID, C4Error error, 
+            [MarshalAs(UnmanagedType.U1)]bool pushing, FLSlice docID, C4Error error, 
             [MarshalAs(UnmanagedType.U1)]bool transient, void* context);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal unsafe delegate void C4ReplicatorBlobProgressCallback(C4Replicator* replicator,
-        [MarshalAs(UnmanagedType.U1)]bool pushing, C4Slice docID, C4Slice docProperty, 
+        [MarshalAs(UnmanagedType.U1)]bool pushing, FLSlice docID, FLSlice docProperty, 
         C4BlobKey blobKey, ulong bytesComplete, ulong bytesTotal, C4Error error, 
         void* context);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal unsafe delegate void C4ReplicatorPushFilterFunction(FLSlice docID,
+        FLDict* body, void* context);
 }
 
 namespace Couchbase.Lite.Interop
@@ -57,13 +61,14 @@ namespace Couchbase.Lite.Interop
         private C4ReplicatorBlobProgressCallback _onBlobProgressUpdated;
         private C4ReplicatorStatusChangedCallback _onStatusChanged;
         private C4ReplicatorDocumentEndedCallback _onDocumentEnded;
+        private C4ReplicatorPushFilterFunction _pushFilter;
 
         public C4ReplicatorParameters C4Params => _c4Params;
 
         public ReplicatorParameters(IDictionary<string, object> options)
         {
             if (options != null) {
-                _c4Params.optionsDictFleece = (C4Slice) options.FLEncode();
+                _c4Params.optionsDictFleece = (FLSlice) options.FLEncode();
             }
         }
 
@@ -106,6 +111,15 @@ namespace Couchbase.Lite.Interop
             }
         }
 
+        public C4ReplicatorPushFilterFunction PushFilter
+        {
+            get => _pushFilter;
+            set {
+                _pushFilter = value;
+                _c4Params.pushFilter = Marshal.GetFunctionPointerForDelegate(value);
+            }
+        }
+
         public unsafe object Context
         {
             get => GCHandle.FromIntPtr((IntPtr) _c4Params.callbackContext).Target;
@@ -128,7 +142,7 @@ namespace Couchbase.Lite.Interop
 
         public void Dispose()
         {
-            Native.FLSliceResult_Free((FLSliceResult)_c4Params.optionsDictFleece);
+            Native.FLSliceResult_Release((FLSliceResult)_c4Params.optionsDictFleece);
             Context = null;
         }
     }
@@ -139,14 +153,14 @@ namespace Couchbase.Lite.Interop
             C4Database *otherDb, C4ReplicatorParameters @params, C4Error* err)
         {
             using (var remoteDatabaseName_ = new C4String(remoteDatabaseName)) {
-                return c4repl_new(db, remoteAddress, remoteDatabaseName_.AsC4Slice(), otherDb, @params, err);
+                return c4repl_new(db, remoteAddress, remoteDatabaseName_.AsFLSlice(), otherDb, @params, err);
             }
         }
 
         public static IDictionary<string, object> bridge_c4repl_getResponseHeaders(C4Replicator* repl)
         {
             var result = c4repl_getResponseHeaders(repl);
-            return FLSliceExtensions.ToObject(NativeRaw.FLValue_FromTrustedData((FLSlice) result)) as
+            return FLSliceExtensions.ToObject(NativeRaw.FLValue_FromData(result, FLTrust.Trusted)) as
                 IDictionary<string, object>;
         }
     }

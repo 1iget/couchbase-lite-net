@@ -36,7 +36,6 @@ using JetBrains.Annotations;
 using LiteCore;
 using LiteCore.Interop;
 using LiteCore.Util;
-using ObjCRuntime;
 
 namespace Couchbase.Lite.Sync
 {
@@ -242,7 +241,7 @@ namespace Couchbase.Lite.Sync
         }
 
         [MonoPInvokeCallback(typeof(C4ReplicatorDocumentEndedCallback))]
-        private static void OnDocEnded(C4Replicator* repl, bool pushing, C4Slice docID, C4Error error, bool transient, void* context)
+        private static void OnDocEnded(C4Replicator* repl, bool pushing, FLSlice docID, C4Error error, bool transient, void* context)
         {
             var replicator = GCHandle.FromIntPtr((IntPtr)context).Target as Replicator;
             var docIDStr = docID.CreateString();
@@ -254,7 +253,7 @@ namespace Couchbase.Lite.Sync
         }
 
         [MonoPInvokeCallback(typeof(C4ReplicatorBlobProgressCallback))]
-        private static void BlobProgressCallback(C4Replicator* repl, bool pushing, C4Slice docID, C4Slice docProperty, C4BlobKey blobKey, 
+        private static void BlobProgressCallback(C4Replicator* repl, bool pushing, FLSlice docID, FLSlice docProperty, C4BlobKey blobKey, 
             ulong bytesComplete, ulong bytesTotal, C4Error error, void* context)
         {
             var blobProgress = new BlobProgress(pushing, docID.CreateString() ?? "", bytesComplete, bytesTotal);
@@ -437,10 +436,10 @@ namespace Couchbase.Lite.Sync
                 scheme = new C4String(remoteUrl.Scheme);
                 host = new C4String(remoteUrl.Host);
                 path = new C4String(pathStr);
-                addr.scheme = scheme.AsC4Slice();
-                addr.hostname = host.AsC4Slice();
+                addr.scheme = scheme.AsFLSlice();
+                addr.hostname = host.AsFLSlice();
                 addr.port = (ushort) remoteUrl.Port;
-                addr.path = path.AsC4Slice();
+                addr.path = path.AsFLSlice();
             } else {
                 otherDB = Config.OtherDB;
             }

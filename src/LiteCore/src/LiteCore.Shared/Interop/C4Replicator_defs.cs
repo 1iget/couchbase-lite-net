@@ -56,7 +56,8 @@ namespace LiteCore.Interop
     {
         public C4ReplicatorMode push;
         public C4ReplicatorMode pull;
-        public C4Slice optionsDictFleece;
+        public FLSlice optionsDictFleece;
+        public IntPtr pushFilter;
         public IntPtr validationFunc;
         public IntPtr onStatusChanged;
         public IntPtr onDocumentEnded;
@@ -66,12 +67,7 @@ namespace LiteCore.Interop
     }
 
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct C4Progress
+	internal unsafe struct C4Progress
     {
         public ulong unitsCompleted;
         public ulong unitsTotal;
@@ -80,7 +76,7 @@ namespace LiteCore.Interop
 
     unsafe struct C4DocumentReplicatedStatus
     {
-        public C4Slice docID;
+        public FLSlice docID;
         public C4Error error;
         public bool pushing;
     }
@@ -88,29 +84,19 @@ namespace LiteCore.Interop
     unsafe struct C4BlobProgress
     {
         public string dirPath; //Dir path - Not sure if this is right
-        public C4Slice docID;
-        public C4Slice docProperty;
+        public FLSlice docID;
+        public FLSlice docProperty;
         public C4BlobKey key;
         public ulong bytesCompleted;
         public ulong bytesTotal;
         public C4Error error;
     };
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct C4Replicator
+	internal unsafe struct C4Replicator
     {
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct C4ReplicatorStatus
+	internal unsafe struct C4ReplicatorStatus
     {
         public C4ReplicatorActivityLevel level;
         public C4Progress progress;

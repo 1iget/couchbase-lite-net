@@ -1,9 +1,6 @@
 //
 // Fleece_defs.cs
 //
-// Author:
-// 	Jim Borden  <jim.borden@couchbase.com>
-//
 // Copyright (c) 2018 Couchbase, Inc All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -74,6 +71,21 @@ namespace LiteCore.Interop
         InternalError,
         NotFound,
         SharedKeysStateError,
+        POSIXError,
+        Unsupported,
+    }
+
+#if LITECORE_PACKAGED
+    internal
+#else
+    public
+#endif
+    enum FLTrust
+    {
+        
+        Untrusted,
+        
+        Trusted
     }
 
     internal unsafe struct FLDictIterator
@@ -84,46 +96,40 @@ namespace LiteCore.Interop
         private uint _private2;
         private byte _private3;
 
-        // _private4[3]
-        private void* _private4;
-        private void* _private5;
-        private void* _private6;
+        // _private4[4]
+        private void* _private4a;
+        private void* _private4b;
+        private void* _private4c;
+        private void* _private4d;
+
+        private int _private5;
 
         #pragma warning restore CS0169
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct FLEncoder
+	internal unsafe struct FLPathComponent
+    {
+        public FLSlice key;
+        public uint index;
+    }
+
+	internal unsafe struct FLDeepIterator
     {
     }
 
-    internal unsafe struct FLDictKey
+	internal unsafe struct FLKeyPath
     {
-        #pragma warning disable CS0169
-
-        // _private1[4] 
-        private void* _private1a;
-        private void* _private1b;
-        private void* _private1c;
-        private void* _private1d;
-        private uint _private2;
-        private uint _private3;
-        private byte _private4;
-        private byte _private5;
-
-        #pragma warning restore CS0169
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct FLArray
+	internal unsafe struct FLEncoder
+    {
+    }
+
+	internal unsafe struct FLArray
+    {
+    }
+
+	internal unsafe struct FLMutableDict
     {
     }
 
@@ -139,81 +145,36 @@ namespace LiteCore.Interop
         #pragma warning restore CS0169
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe partial struct FLSliceResult
+    internal unsafe struct FLDictKey
     {
-        public void* buf;
-        private UIntPtr _size;
+        #pragma warning disable CS0169
 
-        public ulong size
-        {
-            get {
-                return _size.ToUInt64();
-            }
-            set {
-                _size = (UIntPtr)value;
-            }
-        }
+        private FLSlice _private1;
+        private void* _private2;
+        private uint _private3;
+        private uint _private4;
+        private byte _private5;
+
+        #pragma warning restore CS0169
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct FLValue
+	internal unsafe struct FLValue
     {
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct FLKeyPath
+	internal unsafe struct FLSharedKeys
     {
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct FLSharedKeys
+	internal unsafe struct FLDoc
     {
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe partial struct FLSlice
+	internal unsafe struct FLDict
     {
-        public void* buf;
-        private UIntPtr _size;
-
-        public ulong size
-        {
-            get {
-                return _size.ToUInt64();
-            }
-            set {
-                _size = (UIntPtr)value;
-            }
-        }
     }
 
-#if LITECORE_PACKAGED
-    internal
-#else
-    public
-#endif
-    unsafe struct FLDict
+	internal unsafe struct FLMutableArray
     {
     }
 }
