@@ -55,7 +55,8 @@ namespace Couchbase.Lite.Sync
     public enum ReplicatorOptionProgressLevel : int
     {
         Overall,
-        PerDocument
+        PerDocument,
+        PerAttachment
     }
 
     /// <summary>
