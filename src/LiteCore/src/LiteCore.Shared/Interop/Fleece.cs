@@ -25,7 +25,7 @@ using System.Text;
 
 using Couchbase.Lite;
 using Couchbase.Lite.Interop;
-
+using Couchbase.Lite.Sync;
 using LiteCore.Util;
 
 namespace LiteCore.Interop
@@ -396,6 +396,9 @@ namespace LiteCore.Interop
                     break;
                 case DateTimeOffset dto:
                     (dto.ToString("o")).FLEncode(enc);
+                    break;
+                case ReplicatorOptionProgressLevel level:
+                    ((int)level).FLEncode(enc);
                     break;
                 default:
                     if (_FLEncodeExtension?.Invoke(obj, enc) != true) {

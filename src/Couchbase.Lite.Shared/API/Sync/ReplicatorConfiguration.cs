@@ -79,7 +79,6 @@ namespace Couchbase.Lite.Sync
         private Uri _remoteUrl;
         private Database _otherDb;
         private C4SocketFactory _socketFactory;
-        private ReplicatorOptionProgressLevel _progressLevel = ReplicatorOptionProgressLevel.Overall;
 
         #endregion
 
@@ -111,6 +110,12 @@ namespace Couchbase.Lite.Sync
         {
             get => Options.CheckpointInterval;
             set => _freezer.PerformAction(() => Options.CheckpointInterval = value);
+        }
+
+        internal ReplicatorOptionProgressLevel ProgressLevel
+        {
+            get => Options.ProgressLevel;
+            set => _freezer.PerformAction(() => Options.ProgressLevel = value);
         }
 
         /// <summary>
@@ -201,12 +206,6 @@ namespace Couchbase.Lite.Sync
         [NotNull]
         public IEndpoint Target { get; }
 
-        public ReplicatorOptionProgressLevel ProgressLevel
-        {
-            get => _progressLevel;
-            set => _freezer.SetValue(ref _progressLevel, value);
-        }
-
         #endregion
 
         #region Constructors
@@ -239,7 +238,6 @@ namespace Couchbase.Lite.Sync
                 Authenticator = Authenticator,
                 Continuous = Continuous,
                 ReplicatorType = ReplicatorType,
-                ProgressLevel = ProgressLevel,
                 Options = Options
             };
 

@@ -101,7 +101,7 @@ namespace Couchbase.Lite.Sync
         internal SerialQueue DispatchQueue { get; } = new SerialQueue();
 
         #endregion
-
+            
         #region Constructors
 
         static Replicator()
@@ -130,6 +130,30 @@ namespace Couchbase.Lite.Sync
         #endregion
 
         #region Public Methods
+
+        [ContractAnnotation("null => halt")]
+        public ListenerToken AddBlobProgressListener(EventHandler<ReplicatorBlobProgressUpdatedEventArgs> handler)
+        {
+            CBDebug.MustNotBeNull(Log.To.Sync, Tag, nameof(handler), handler);
+
+            return AddBlobProgressListener(null, handler);
+        }
+
+        [ContractAnnotation("handler:null => halt")]
+        public ListenerToken AddBlobProgressListener([CanBeNull]TaskScheduler scheduler,
+            EventHandler<ReplicatorBlobProgressUpdatedEventArgs> handler)
+        {
+            CBDebug.MustNotBeNull(Log.To.Sync, Tag, nameof(handler), handler);
+
+            var cbHandler = new CouchbaseEventHandler<ReplicatorBlobProgressUpdatedEventArgs>(handler, scheduler);
+            _blobProgressupdated.Add(cbHandler);
+            return new ListenerToken(cbHandler, "repl");
+        }
+
+        public void RemovBlobProgressListener(ListenerToken token)
+        {
+            _blobProgressupdated.Remove(token);
+        }
 
         [ContractAnnotation("null => halt")]
         public ListenerToken AddDocumentEndedListener(EventHandler<ReplicatorDocumentReplicatedEventArgs> handler)
@@ -211,6 +235,11 @@ namespace Couchbase.Lite.Sync
             }
 
             Config.Options.Reset = true;
+        }
+
+        public void SetReplicatorOptionProgressLevel(ReplicatorOptionProgressLevel level)
+        {
+            Config.Options.ProgressLevel = level;
         }
 
         /// <summary>
@@ -476,7 +505,6 @@ namespace Couchbase.Lite.Sync
             var push = Config.ReplicatorType.HasFlag(ReplicatorType.Push);
             var pull = Config.ReplicatorType.HasFlag(ReplicatorType.Pull);
             var continuous = Config.Continuous;
-            
             var socketFactory = Config.SocketFactory;
             socketFactory.context = GCHandle.ToIntPtr(GCHandle.Alloc(this)).ToPointer();
             _nativeParams = new ReplicatorParameters(options)
@@ -491,7 +519,7 @@ namespace Couchbase.Lite.Sync
             };
 
             // Clear the reset flag, it is a one-time thing
-            Config.Options.Reset = false;
+            options.Reset = false;
 
             var err = new C4Error();
             var status = default(C4ReplicatorStatus);
