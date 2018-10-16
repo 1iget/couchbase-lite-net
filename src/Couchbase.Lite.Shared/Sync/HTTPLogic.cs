@@ -132,7 +132,8 @@ namespace Couchbase.Lite.Sync
                 _headers["Host"] = $"{_urlRequest.Host}:{_urlRequest.Port}";
             }
 
-            if (ShouldRetry && _authorizationHeader != null) {
+            _authorizationHeader = CreateAuthHeader();
+            if (_authorizationHeader != null) {
                 _headers["Authorization"] = _authorizationHeader;
             }
 
@@ -170,20 +171,6 @@ namespace Couchbase.Lite.Sync
                     break;
                 case HttpStatusCode.Unauthorized:
                 case HttpStatusCode.ProxyAuthenticationRequired:
-                    var authResponse = parser.Headers.Get("WWW-Authenticate");
-                    if (authResponse == null) {
-                        Log.To.Sync.W(Tag, "HTTP missing WWW-Authenticate response!");
-                        Error = new CouchbaseLiteException(C4ErrorCode.RemoteError);
-                        break;
-                    }
-
-                    if (_authorizationHeader == null && Credential != null) {
-                        _authorizationHeader = CreateAuthHeader(authResponse);
-                        Log.To.Sync.I(Tag, $"Auth challenge received for {Credential.UserName}");
-                        ShouldRetry = true;
-                        break;
-                    }
-
                     Log.To.Sync.I(Tag, "HTTP auth failed");
                     Error = new CouchbaseNetworkException(httpStatus);
                     break;
@@ -201,20 +188,15 @@ namespace Couchbase.Lite.Sync
 
         #region Private Methods
 
-        private string CreateAuthHeader(string authResponse)
+        private string CreateAuthHeader()
         {
-            var challenge = ParseAuthHeader(authResponse);
-            if (challenge == null) {
+            if (Credential == null) {
                 return null;
             }
 
-            if (challenge["Scheme"] == "Basic") {
-                var cipher = Encoding.UTF8.GetBytes($"{Credential.UserName}:{Credential.Password}");
-                var encodedVal = Convert.ToBase64String(cipher);
-                return $"Basic {encodedVal}";
-            }
-
-            return null;
+            var cipher = Encoding.UTF8.GetBytes($"{Credential.UserName}:{Credential.Password}");
+            var encodedVal = Convert.ToBase64String(cipher);
+            return $"Basic {encodedVal}";
         }
 
 		private static string GetUserAgent()
@@ -251,27 +233,6 @@ namespace Couchbase.Lite.Sync
 			var hardware = runtimePlatform != null ? $"; {runtimePlatform.HardwareName}" : "";
 			return $"CouchbaseLite/{version} (.NET; {osDescription}{hardware}) Build/{build} LiteCore/{Native.c4_getVersion()} Commit/{commit}";
 		}
-
-        private Dictionary<string, string> ParseAuthHeader(string authResponse)
-        {
-            if (authResponse == null) {
-                return null;
-            }
-
-            var challenge = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var re = new Regex("(\\w+)\\s+(\\w+)=((\\w+)|\"([^\"]+))");
-            var groups = re.Match(authResponse).Groups;
-            var key = authResponse.Substring(groups[2].Index, groups[2].Length);
-            var k = groups[4];
-            if (k.Length == 0) {
-                k = groups[5];
-            }
-
-            challenge[key] = authResponse.Substring(k.Index, k.Length);
-            challenge["Scheme"] = authResponse.Substring(groups[1].Index, groups[1].Length);
-            challenge["WWW-Authenticate"] = authResponse;
-            return challenge;
-        }
 
         private bool Redirect(HttpMessageParser parser)
         {
