@@ -47,7 +47,7 @@ namespace Couchbase.Lite.Sync
     }
 
     /// <summary>
-    /// Event arguments for the <see cref="Replicator.AddDetailChangeListener(EventHandler{ReplicatorBlobProgressUpdatedEventArgs})" /> event
+    /// Event arguments for the <see cref="Replicator.AddBlobProgressListener(EventHandler{ReplicatorBlobProgressUpdatedEventArgs})" /> event
     /// </summary>
     public sealed class ReplicatorBlobProgressUpdatedEventArgs : EventArgs
     {
@@ -71,7 +71,7 @@ namespace Couchbase.Lite.Sync
     }
 
     /// <summary>
-    /// Event arguments for the <see cref="Replicator.AddDetailChangeListener(EventHandler{ReplicatorDocumentReplicatedEventArgs})" /> event
+    /// Event arguments for the <see cref="Replicator.AddDocumentEndedListener(EventHandler{ReplicatorDocumentReplicatedEventArgs})" /> event
     /// </summary>
     public sealed class ReplicatorDocumentReplicatedEventArgs : EventArgs
     {
