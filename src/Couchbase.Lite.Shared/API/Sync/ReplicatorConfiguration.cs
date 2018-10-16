@@ -52,11 +52,26 @@ namespace Couchbase.Lite.Sync
         PushAndPull = Push | Pull
     }
 
+    /// <summary>
+    /// An enum representing level of opt in on progress of replication
+    /// </summary>
+    [Flags]
     public enum ReplicatorOptionProgressLevel : int
     {
+        /// <summary>
+        /// No additional replication progress callback
+        /// </summary>
         Overall,
-        PerDocument,
-        PerAttachment
+
+        /// <summary>
+        /// Every document replication ended callback
+        /// </summary>
+        PerDocument, // >=1
+
+        /// <summary>
+        /// Every blob replication progress callback
+        /// </summary>
+        PerAttachment // >=2
     }
 
     /// <summary>

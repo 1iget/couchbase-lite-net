@@ -131,6 +131,11 @@ namespace Couchbase.Lite.Sync
 
         #region Public Methods
 
+        /// <summary>
+        /// Adds a blobs progress listener on this replication object (similar to a C# event)
+        /// </summary>
+        /// <param name="handler">The logic to run during the callback</param>
+        /// <returns>A token to remove the handler later</returns>
         [ContractAnnotation("null => halt")]
         public ListenerToken AddBlobProgressListener(EventHandler<ReplicatorBlobProgressUpdatedEventArgs> handler)
         {
@@ -139,6 +144,15 @@ namespace Couchbase.Lite.Sync
             return AddBlobProgressListener(null, handler);
         }
 
+        /// <summary>
+        /// Adds a blobs progress listener on this replication object (similar to a C# event, but
+        /// with the ability to specify a <see cref="TaskScheduler"/> to schedule the 
+        /// handler to run on)
+        /// </summary>
+        /// <param name="scheduler">The <see cref="TaskScheduler"/> to run the <c>handler</c> on
+        /// (<c>null</c> for default)</param>
+        /// <param name="handler">The logic to run during the callback</param>
+        /// <returns>A token to remove the handler later</returns>
         [ContractAnnotation("handler:null => halt")]
         public ListenerToken AddBlobProgressListener([CanBeNull]TaskScheduler scheduler,
             EventHandler<ReplicatorBlobProgressUpdatedEventArgs> handler)
@@ -150,11 +164,20 @@ namespace Couchbase.Lite.Sync
             return new ListenerToken(cbHandler, "repl");
         }
 
+        /// <summary>
+        /// Removes a previously added blobs progress listener via its <see cref="ListenerToken"/>
+        /// </summary>
+        /// <param name="token">The token received from <see cref="AddBlobProgressListener(TaskScheduler, EventHandler{ReplicatorBlobProgressUpdatedEventArgs})"/></param>
         public void RemovBlobProgressListener(ListenerToken token)
         {
             _blobProgressupdated.Remove(token);
         }
 
+        /// <summary>
+        /// Adds a documents ended listener on this replication object (similar to a C# event)
+        /// </summary>
+        /// <param name="handler">The logic to run during the callback</param>
+        /// <returns>A token to remove the handler later</returns>
         [ContractAnnotation("null => halt")]
         public ListenerToken AddDocumentEndedListener(EventHandler<ReplicatorDocumentReplicatedEventArgs> handler)
         {
@@ -163,6 +186,15 @@ namespace Couchbase.Lite.Sync
             return AddDocumentEndedListener(null, handler);
         }
 
+        /// <summary>
+        /// Adds a documents ended listener on this replication object (similar to a C# event, but
+        /// with the ability to specify a <see cref="TaskScheduler"/> to schedule the 
+        /// handler to run on)
+        /// </summary>
+        /// <param name="scheduler">The <see cref="TaskScheduler"/> to run the <c>handler</c> on
+        /// (<c>null</c> for default)</param>
+        /// <param name="handler">The logic to run during the callback</param>
+        /// <returns>A token to remove the handler later</returns>
         [ContractAnnotation("handler:null => halt")]
         public ListenerToken AddDocumentEndedListener([CanBeNull]TaskScheduler scheduler,
             EventHandler<ReplicatorDocumentReplicatedEventArgs> handler)
@@ -174,6 +206,10 @@ namespace Couchbase.Lite.Sync
             return new ListenerToken(cbHandler, "repl");
         }
 
+        /// <summary>
+        /// Removes a previously added documents ended listener via its <see cref="ListenerToken"/>
+        /// </summary>
+        /// <param name="token">The token received from <see cref="AddDocumentEndedListener(TaskScheduler, EventHandler{ReplicatorDocumentReplicatedEventArgs})"/></param>
         public void RemoveDocumentEndedListener(ListenerToken token)
         {
             _documentEndedUpdate.Remove(token);
@@ -237,6 +273,10 @@ namespace Couchbase.Lite.Sync
             Config.Options.Reset = true;
         }
 
+        /// <summary>
+        /// Sets replication progress callback level
+        /// </summary>
+        /// <param name="level"> the level to opt in for documents ended and blobs progress callback.</param>
         public void SetReplicatorOptionProgressLevel(ReplicatorOptionProgressLevel level)
         {
             Config.Options.ProgressLevel = level;
